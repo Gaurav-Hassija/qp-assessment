@@ -31,6 +31,9 @@ export class ItemModel {
   unit_price: number;
 
   @Column()
+  unit: string;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
   stock_inventory: number;
 
   @Column({ default: false })
