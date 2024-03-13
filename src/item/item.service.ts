@@ -186,10 +186,42 @@ export class ItemService {
           StatusCodes.FORBIDDEN,
         );
       }
+      const { id, name, description, price, available_stock } = body;
+      // check if item exists or not
+
+      const itemDetails = await this.itemRepository.findOne({
+        where: { id: id.toString() },
+      });
+      if (!itemDetails) {
+        throw new HttpException(
+          'Item does not exists',
+          StatusCodes.BAD_REQUEST,
+        );
+      }
+      const updateItemPayload: Partial<ItemModel> = {};
+      if (name) {
+        updateItemPayload.name = name;
+      }
+      if (description) {
+        updateItemPayload.description = description;
+      }
+      if (price) {
+        updateItemPayload.unit_price = price;
+      }
+      if (available_stock) {
+        updateItemPayload.stock_inventory = available_stock;
+      }
+
+      // update the item table with updated field
+      await this.itemRepository.update(
+        {
+          id: id.toString(),
+        },
+        updateItemPayload,
+      );
       return {
         status: StatusCodes.OK,
-        message: 'Item deleted',
-        data: {},
+        message: 'Item updated successfully',
       };
     } catch (error) {
       throw new HttpException(error.response, error.status);

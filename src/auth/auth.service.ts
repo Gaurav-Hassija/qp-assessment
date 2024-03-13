@@ -5,8 +5,10 @@ import { StatusCodes } from 'http-status-codes';
 import { OTP_EXPIRY_IN_SECONDS } from 'src/constants';
 import { ISendOtp, IVerifyOtp } from 'src/core/interfaces/request-body';
 import { generateAccessToken, generateOtp } from 'src/core/utils';
+import { RoleModel } from 'src/db_migrations/models/role.model';
 import { UserOtpModel } from 'src/db_migrations/models/user-otp.model';
 import { UserModel } from 'src/db_migrations/models/user.model';
+import * as twilio from 'twilio';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -14,6 +16,8 @@ export class AuthService {
   constructor(
     @InjectRepository(UserModel)
     private userRepository: Repository<UserModel>,
+    @InjectRepository(RoleModel)
+    private roleRepository: Repository<RoleModel>,
     @InjectRepository(UserOtpModel)
     private userOtpRepository: Repository<UserOtpModel>,
     private readonly jwtService: JwtService,
@@ -27,10 +31,16 @@ export class AuthService {
         where: { phone_number },
       });
       if (!userData) {
+        // get role id for user
+        const roleDetails = await this.roleRepository.findOne({
+          where: { role: 'user' },
+        });
+
         const userResponse = await this.userRepository.save({
           phone_number,
-          role_id: 1,
+          role_id: roleDetails.id,
         });
+
         if (!userResponse) {
           throw new HttpException(
             'Something went wrong',
@@ -46,22 +56,26 @@ export class AuthService {
         otp: otp.toString(),
       });
 
-      // // configure twilio to send sms
-      // const client = twilio(
-      //   process.env.TWILIO_SID,
-      //   process.env.TWILIO_AUTH_TOKEN,
-      // );
+      // configure twilio to send sms
+      const client = twilio(
+        process.env.TWILIO_SID,
+        process.env.TWILIO_AUTH_TOKEN,
+      );
 
-      // // send otp using twilio client
-      // // twilio works with free account
-      // const twilioResponse = await client.messages.create({
-      //   body: `Dear user, your otp to login into QP Grocery is ${otp}`,
-      //   from: process.env.TWILIO_PHONE_NUMBER,
-      //   to: `+91${phone_number}`,
-      // });
-      // console.log(twilioResponse);
+      // send otp using twilio client
+      // twilio works with free account
+      try {
+        const twilioResponse = await client.messages.create({
+          body: `Dear user, your otp to login into QP Grocery is ${otp}`,
+          from: process.env.TWILIO_PHONE_NUMBER,
+          to: `+91${phone_number}`,
+        });
+        console.log(twilioResponse);
+      } catch (error) {
+        console.log(error);
+      }
 
-      // update user with otp details
+      //update user with otp details
       await this.userRepository.update(
         {
           id: userData.id,
@@ -74,7 +88,7 @@ export class AuthService {
       return {
         status: HttpStatus.OK,
         message: `Otp send successfully to ${phone_number}`,
-        otp: `${otp}. PS - using twilio to send sms, but free trail doesnt work on every number hence sending otp in response body for further processing`,
+        otp: `${otp}. PS - using twilio to send sms, but free trail does not work on every number hence sending otp in response body for further processing`,
       };
     } catch (error) {
       throw new HttpException(error, error.status);
@@ -85,6 +99,7 @@ export class AuthService {
       const { phone_number, otp } = body;
       const userData: UserModel & {
         user_otp?: UserOtpModel;
+        role?: RoleModel;
       } = await this.userRepository
         .createQueryBuilder('user')
         .leftJoinAndMapOne(
@@ -92,6 +107,12 @@ export class AuthService {
           UserOtpModel,
           'user_otp',
           'user_otp.id = user.user_otp_id',
+        )
+        .leftJoinAndMapOne(
+          'user.role',
+          RoleModel,
+          'role',
+          'role.id = user.role_id',
         )
         .where('user.phone_number = :phoneNumber', {
           phoneNumber: phone_number,
@@ -133,7 +154,7 @@ export class AuthService {
       // Generate Access Token
       const accessToken = await generateAccessToken(this.jwtService, {
         id: userData.id,
-        role: userData.role_id,
+        role: userData.role.role,
         phone_number,
       });
 

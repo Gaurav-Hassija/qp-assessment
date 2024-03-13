@@ -87,7 +87,7 @@ const deleteItemValidator = async (body: IDeleteItem) => {
 const updateItemValidator = async (body: IUpdateItem) => {
   try {
     const schema = Joi.object({
-      id: Joi.string().required(),
+      id: Joi.number().required(),
       name: Joi.string(),
       description: Joi.string(),
       price: Joi.number(),
@@ -96,10 +96,10 @@ const updateItemValidator = async (body: IUpdateItem) => {
       .or('name', 'description', 'price', 'available_stock')
       .when(Joi.object({ id: Joi.exist() }).unknown(), {
         then: Joi.object({
-          id: Joi.string().required(),
+          id: Joi.number().required(),
         }).or('name', 'description', 'price', 'available_stock'),
         otherwise: Joi.object({
-          id: Joi.string().required(),
+          id: Joi.number().required(),
         }),
       });
     await schema.validateAsync(body, joiConfig);
