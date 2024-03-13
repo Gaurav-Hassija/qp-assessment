@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Patch,
   Post,
   Req,
   Res,
@@ -11,8 +12,16 @@ import {
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { JwtAuthGuard } from 'src/core/guards/jwt-auth-guard';
-import { IAddItem, IDeleteItem } from 'src/core/interfaces/request-body';
-import { addItemValidator, deleteItemValidator } from 'src/core/validators';
+import {
+  IAddItem,
+  IDeleteItem,
+  IUpdateItem,
+} from 'src/core/interfaces/request-body';
+import {
+  addItemValidator,
+  deleteItemValidator,
+  updateItemValidator,
+} from 'src/core/validators';
 import { ItemService } from './item.service';
 
 @Controller('item')
@@ -47,6 +56,18 @@ export class ItemController {
   ) {
     await deleteItemValidator(body);
     const response = await this.itemService.deleteItem(body, req.user_data);
+    return res.status(StatusCodes.OK).send(response);
+  }
+
+  @Patch('')
+  @UseGuards(JwtAuthGuard)
+  async updateItem(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Body() body: IUpdateItem,
+  ) {
+    await updateItemValidator(body);
+    const response = await this.itemService.updateItem(body, req.user_data);
     return res.status(StatusCodes.OK).send(response);
   }
 }

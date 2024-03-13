@@ -3,8 +3,10 @@ import * as Joi from 'joi';
 import {
   IAddItem,
   ICreateCategory,
+  ICreateOrder,
   IDeleteItem,
   ISendOtp,
+  IUpdateItem,
   IVerifyOtp,
 } from '../interfaces/request-body';
 const joiConfig = {
@@ -27,11 +29,7 @@ const sendPhoneOtpValidator = async (body: ISendOtp) => {
     });
     await schema.validateAsync(body, joiConfig);
   } catch (err) {
-    throw new HttpException(
-      'Validation Error',
-      HttpStatus.BAD_REQUEST,
-      parseErrorsFromJoi(err),
-    );
+    throw new HttpException(parseErrorsFromJoi(err), HttpStatus.BAD_REQUEST);
   }
 };
 
@@ -43,11 +41,7 @@ const verifyPhoneOtpValidator = async (body: IVerifyOtp) => {
     });
     await schema.validateAsync(body, joiConfig);
   } catch (err) {
-    throw new HttpException(
-      'Validation Error',
-      HttpStatus.BAD_REQUEST,
-      parseErrorsFromJoi(err),
-    );
+    throw new HttpException(parseErrorsFromJoi(err), HttpStatus.BAD_REQUEST);
   }
 };
 
@@ -59,11 +53,7 @@ const createCategoryValidator = async (body: ICreateCategory) => {
     });
     await schema.validateAsync(body, joiConfig);
   } catch (err) {
-    throw new HttpException(
-      'Validation Error',
-      HttpStatus.BAD_REQUEST,
-      parseErrorsFromJoi(err),
-    );
+    throw new HttpException(parseErrorsFromJoi(err), HttpStatus.BAD_REQUEST);
   }
 };
 
@@ -79,11 +69,7 @@ const addItemValidator = async (body: IAddItem) => {
     });
     await schema.validateAsync(body, joiConfig);
   } catch (err) {
-    throw new HttpException(
-      'Validation Error',
-      HttpStatus.BAD_REQUEST,
-      parseErrorsFromJoi(err),
-    );
+    throw new HttpException(parseErrorsFromJoi(err), HttpStatus.BAD_REQUEST);
   }
 };
 
@@ -94,18 +80,71 @@ const deleteItemValidator = async (body: IDeleteItem) => {
     });
     await schema.validateAsync(body, joiConfig);
   } catch (err) {
-    throw new HttpException(
-      'Validation Error',
-      HttpStatus.BAD_REQUEST,
-      parseErrorsFromJoi(err),
-    );
+    throw new HttpException(parseErrorsFromJoi(err), HttpStatus.BAD_REQUEST);
+  }
+};
+
+const updateItemValidator = async (body: IUpdateItem) => {
+  try {
+    const schema = Joi.object({
+      id: Joi.string().required(),
+      name: Joi.string(),
+      description: Joi.string(),
+      price: Joi.number(),
+      available_stock: Joi.string(),
+    })
+      .or('name', 'description', 'price', 'available_stock')
+      .when(Joi.object({ id: Joi.exist() }).unknown(), {
+        then: Joi.object({
+          id: Joi.string().required(),
+        }).or('name', 'description', 'price', 'available_stock'),
+        otherwise: Joi.object({
+          id: Joi.string().required(),
+        }),
+      });
+    await schema.validateAsync(body, joiConfig);
+  } catch (err) {
+    throw new HttpException(parseErrorsFromJoi(err), HttpStatus.BAD_REQUEST);
+  }
+};
+
+const createOrderValidator = async (body: ICreateOrder) => {
+  try {
+    const schema = Joi.object({
+      items: Joi.array()
+        .items({
+          item_id: Joi.number().required(),
+          quantity: Joi.number().required(),
+        })
+        .required()
+        .min(1),
+      billing_address: Joi.object({
+        pincode: Joi.string().required(),
+        city: Joi.string().required(),
+        address_1: Joi.string().required(),
+        address_2: Joi.string(),
+        state: Joi.string().required(),
+      }).required(),
+      shipping_address: Joi.object({
+        pincode: Joi.string().required(),
+        city: Joi.string().required(),
+        address_1: Joi.string().required(),
+        address_2: Joi.string(),
+        state: Joi.string().required(),
+      }).required(),
+    });
+    await schema.validateAsync(body, joiConfig);
+  } catch (err) {
+    throw new HttpException(parseErrorsFromJoi(err), HttpStatus.BAD_REQUEST);
   }
 };
 
 export {
   addItemValidator,
   createCategoryValidator,
+  createOrderValidator,
   deleteItemValidator,
   sendPhoneOtpValidator,
+  updateItemValidator,
   verifyPhoneOtpValidator,
 };

@@ -47,7 +47,7 @@ export class CategoryService {
         message: 'Category inserted successfully',
       };
     } catch (error) {
-      throw new HttpException(error, error.status);
+      throw new HttpException(error.response, error.status);
     }
   }
 
@@ -75,7 +75,7 @@ export class CategoryService {
         data: categories,
       };
     } catch (error) {
-      throw new HttpException(error, error.status);
+      throw new HttpException(error.response, error.status);
     }
   }
 }

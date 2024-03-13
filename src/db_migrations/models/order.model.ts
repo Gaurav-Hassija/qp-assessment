@@ -3,11 +3,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { UserModel } from './user.model';
 import { AddressModel } from './address.model';
+import { OrderItemModel } from './order-item.model';
+import { UserModel } from './user.model';
 
 @Entity({ name: `order` })
 export class OrderModel {
@@ -73,4 +75,7 @@ export class OrderModel {
     default: () => 'CURRENT_TIMESTAMP',
   })
   updated_at: Date;
+
+  @OneToMany(() => OrderItemModel, (orderItem) => orderItem.order_id)
+  orderItems: OrderItemModel[];
 }

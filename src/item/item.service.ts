@@ -3,7 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { StatusCodes } from 'http-status-codes';
 import { ADMIN_ROLE } from 'src/constants';
 import { IAccessTokenPayload } from 'src/core/interfaces';
-import { IAddItem, IDeleteItem } from 'src/core/interfaces/request-body';
+import {
+  IAddItem,
+  IDeleteItem,
+  IUpdateItem,
+} from 'src/core/interfaces/request-body';
 import { CategoryModel } from 'src/db_migrations/models/category.model';
 import { ItemModel } from 'src/db_migrations/models/item.model';
 import { Repository } from 'typeorm';
@@ -69,7 +73,7 @@ export class ItemService {
         message: 'Item added successfully',
       };
     } catch (error) {
-      throw new HttpException(error, error.status);
+      throw new HttpException(error.response, error.status);
     }
   }
 
@@ -130,7 +134,7 @@ export class ItemService {
         data: items,
       };
     } catch (error) {
-      throw new HttpException(error, error.s);
+      throw new HttpException(error.response, error.status);
     }
   }
 
@@ -170,7 +174,25 @@ export class ItemService {
         data: {},
       };
     } catch (error) {
-      throw new HttpException(error, error.s);
+      throw new HttpException(error.response, error.status);
+    }
+  }
+
+  async updateItem(body: IUpdateItem, userData: IAccessTokenPayload) {
+    try {
+      if (userData.role !== ADMIN_ROLE) {
+        throw new HttpException(
+          `Access denied, restricted to administrators only`,
+          StatusCodes.FORBIDDEN,
+        );
+      }
+      return {
+        status: StatusCodes.OK,
+        message: 'Item deleted',
+        data: {},
+      };
+    } catch (error) {
+      throw new HttpException(error.response, error.status);
     }
   }
 }

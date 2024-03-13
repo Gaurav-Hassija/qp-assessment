@@ -3,20 +3,16 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { OrderModel } from './order.model';
 import { CategoryModel } from './category.model';
 import { ItemModel } from './item.model';
+import { OrderModel } from './order.model';
 
 @Entity({ name: `order_item` })
 export class OrderItemModel {
   @PrimaryGeneratedColumn()
   id: string;
-
-  @Column({ nullable: true })
-  display_order_id: string;
 
   @ManyToOne(() => OrderModel, (order) => order.id)
   @JoinColumn({
@@ -27,7 +23,7 @@ export class OrderItemModel {
   @Column()
   order_id: string;
 
-  @OneToOne(() => CategoryModel, (category) => category.id)
+  @ManyToOne(() => CategoryModel, (category) => category.id)
   @JoinColumn({
     referencedColumnName: 'id',
     foreignKeyConstraintName: 'FK_category_id',
@@ -36,7 +32,7 @@ export class OrderItemModel {
   @Column()
   category_id: string;
 
-  @OneToOne(() => ItemModel, (item) => item.id)
+  @ManyToOne(() => ItemModel, (item) => item.id)
   @JoinColumn({
     referencedColumnName: 'id',
     foreignKeyConstraintName: 'FK_item_id',
