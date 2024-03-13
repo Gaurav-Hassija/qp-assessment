@@ -35,7 +35,12 @@ $ npm run start
 $ npm run start:dev]
 ```
 
+# Seed Initial Data For Role Table
+
+1. Find the postman collection inside the postman_collection folder
+2. Run seed api in order to seed data for roles table in database
+
 ## Perform Admin Activity
 
 1. Login using any phone number
-2. update same phone number in user table with role_id as 2
+2. update same phone number in user table with role_id of admin role
