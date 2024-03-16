@@ -4,7 +4,7 @@ Grocery List API Assessment for QP
 
 ## Prerequisite
 
-1. Install nodejs
+1. Install nodejs version 18 or above
 2. Install @nestjs/cli
 3. Install Postgres
 4. Create server with name qa-assessment in your postgres
