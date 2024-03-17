@@ -354,6 +354,26 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Seed Admin User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:4000/seed/admin",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"seed",
+								"admin"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}
